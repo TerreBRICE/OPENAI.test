@@ -20,24 +20,36 @@ class MseQuestionController extends Controller
 
         $data = [];
 
-        $data ['q'] = $question->lib_auto_h;
+        $data ['q'] = $question->lib_miroir_h;
 
         foreach ($answers as $answer) {
-            $data ['a' . $answer->no_r] = $answer->lib_auto_h;
+            $data ['a' . $answer->no_r] = $answer->lib_miroir_h;
         }
 
-
-        return $this->translate($data, 'german');
+        return $this->translateMirror($data, 'english');
     }
 
-    public function translate(array $data, string $language)
+    public function translateLibAuto(array $data, string $language)
     {
         $response = OpenAI::completions()->create(
             [
                 'model' => 'text-davinci-003',
                 'temperature' => 0.7,
                 'max_tokens' => 1000,
-                'prompt' => 'the following json is a question and 5 possibles answers : '.json_encode($data).'Translate the values and not the keys in '.$language.' and provide your response in json format:',
+                'prompt' => 'the following json is a question (q) and 5 possibles answers (a1 to a5) : '.json_encode($data).'Translate the values and not the keys in '.$language.' and provide your response in json format:',
+            ]);
+
+        return $response['choices'][0]['text'];
+    }
+
+    public function translateMirror(array $data, string $language)
+    {
+        $response = OpenAI::completions()->create(
+            [
+                'model' => 'text-davinci-003',
+                'temperature' => 0.7,
+                'max_tokens' => 1000,
+                'prompt' => 'the following json is a question (q) and 5 possibles answers (a1 to a5), where #PN# will be replaced by a firstname: '.json_encode($data).'Translate the values and not the keys in '.$language.' and provide your response in json format:',
             ]);
 
         return $response['choices'][0]['text'];
